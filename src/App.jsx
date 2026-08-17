@@ -97,21 +97,21 @@ export default function App() {
           <div>
             <dt>Ainda em carência</dt>
             <dd>
-              Participação das respostas em que o beneficiário seguia em carência (quesito c),
-              sobre as que informaram esse quesito.
+              Participação das respostas em que o beneficiário seguia em carência, sobre as que
+              informaram a situação de carência.
             </dd>
           </div>
           <div>
             <dt>No rol do INAS</dt>
-            <dd>Percentual de respostas com "Sim" no quesito e) — o procedimento consta do regulamento do INAS/DF.</dd>
+            <dd>Percentual de respostas em que o procedimento consta do regulamento do INAS/DF.</dd>
           </div>
           <div>
             <dt>No Rol da ANS</dt>
-            <dd>Percentual de respostas com "Sim" no quesito f) — o procedimento consta do Rol da ANS.</dd>
+            <dd>Percentual de respostas em que o procedimento consta do Rol da ANS.</dd>
           </div>
           <div>
             <dt>Autorizado</dt>
-            <dd>Percentual de respostas cuja viabilidade administrativa (quesito l) ficou como "autorizado".</dd>
+            <dd>Percentual de respostas cuja viabilidade administrativa ficou como "autorizado".</dd>
           </div>
           <div>
             <dt>Guias</dt>

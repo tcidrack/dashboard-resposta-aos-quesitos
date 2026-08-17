@@ -23,11 +23,14 @@ const LIMITE_LINHAS = 5000;
 const fmtInteiro = (v) => (v == null ? "—" : Number(v).toLocaleString("pt-BR"));
 
 // Enquadramento: um grupo por quesito, uma série por resposta possível.
+// Os rótulos não citam a letra do quesito (d, e, f...) de propósito: dizem o
+// que a coluna significa. "Enquadra na Carência" é a resposta do quesito d, e
+// não se confunde com a coluna "Carência", que é a situação do beneficiário.
 const QUESITOS_ENQUADRAMENTO = [
-  { campo: "resposta_d", rotulo: "d) Carência" },
-  { campo: "resposta_e", rotulo: "e) Rol INAS" },
-  { campo: "resposta_f", rotulo: "f) Rol ANS" },
-  { campo: "resposta_g", rotulo: "g) Protocolo" },
+  { campo: "resposta_d", rotulo: "Enquadra na Carência" },
+  { campo: "resposta_e", rotulo: "Rol INAS" },
+  { campo: "resposta_f", rotulo: "Rol ANS" },
+  { campo: "resposta_g", rotulo: "Protocolo Clínico" },
 ];
 const SERIES_ENQUADRAMENTO = ["Sim", "Não", "Parcialmente"];
 
@@ -332,7 +335,7 @@ export default function Quesitos({ tema, cores }) {
 
   // Voltar pra primeira página quando o recorte muda. Ajustar durante o render
   // (padrão "You Might Not Need an Effect") em vez de num efeito.
-  const chaveFiltros = [busca, dataInicio, dataFim, filtroNatureza, filtroViabilidade, filtroCarencia].join(" ");
+  const chaveFiltros = [busca, dataInicio, dataFim, filtroNatureza, filtroViabilidade, filtroCarencia].join("\u0000");   // separador que nao aparece nos valores
   const [chaveAnterior, setChaveAnterior] = useState(chaveFiltros);
   if (chaveAnterior !== chaveFiltros) {
     setChaveAnterior(chaveFiltros);
@@ -359,8 +362,8 @@ export default function Quesitos({ tema, cores }) {
       ["", "", "", "% no Rol da ANS", kpis.pctAns != null ? Number(kpis.pctAns.toFixed(2)) : "—"],
       ["", "", "", "% autorizado", kpis.pctAutorizado != null ? Number(kpis.pctAutorizado.toFixed(2)) : "—"],
       [],
-      ["Guias", "Data do Documento", "Processado em", "Carência", "d) Carência", "e) Rol INAS",
-       "f) Rol ANS", "Natureza", "Viabilidade", "Itens", "Valor Total", "Situação"],
+      ["Guias", "Data do Documento", "Processado em", "Carência", "Enquadra na Carência",
+       "Rol INAS", "Rol ANS", "Natureza", "Viabilidade", "Itens", "Valor Total", "Situação"],
       ...filtrados.map((r) => [
         r.guias || "—",
         formatarDataBR(r.data_documento),
@@ -430,22 +433,22 @@ export default function Quesitos({ tema, cores }) {
         <div className="card animated-card" style={cardStyle}>
           <h3>Ainda em Carência</h3>
           <p>{formatarPercentualBR(kpis.pctCarencia)}</p>
-          <p style={{ fontSize: 13, fontWeight: 400 }}>sobre as respostas que informaram o quesito c)</p>
+          <p style={{ fontSize: 13, fontWeight: 400 }}>sobre as respostas que informaram a situação de carência</p>
         </div>
         <div className="card animated-card" style={cardStyle}>
           <h3>No Rol do INAS</h3>
           <p>{formatarPercentualBR(kpis.pctInas)}</p>
-          <p style={{ fontSize: 13, fontWeight: 400 }}>quesito e) respondido "Sim"</p>
+          <p style={{ fontSize: 13, fontWeight: 400 }}>procedimento previsto no regulamento do INAS/DF</p>
         </div>
         <div className="card animated-card" style={cardStyle}>
           <h3>No Rol da ANS</h3>
           <p>{formatarPercentualBR(kpis.pctAns)}</p>
-          <p style={{ fontSize: 13, fontWeight: 400 }}>quesito f) respondido "Sim"</p>
+          <p style={{ fontSize: 13, fontWeight: 400 }}>procedimento previsto no Rol da ANS</p>
         </div>
         <div className="card animated-card" style={cardStyle}>
           <h3>Autorizado</h3>
           <p>{formatarPercentualBR(kpis.pctAutorizado)}</p>
-          <p style={{ fontSize: 13, fontWeight: 400 }}>viabilidade administrativa do quesito l)</p>
+          <p style={{ fontSize: 13, fontWeight: 400 }}>desfecho administrativo do pedido</p>
         </div>
       </div>
 
@@ -504,7 +507,7 @@ export default function Quesitos({ tema, cores }) {
             <div className="card animated-card" style={cardStyle}>
               <h3>Enquadramento por Quesito</h3>
               <p className="grafico-legenda" style={{ color: cores.texto }}>
-                Como foram respondidos os quesitos d), e), f) e g) — carência, rol do INAS, Rol da ANS e protocolo clínico.
+                Como o pedido foi enquadrado: carência prevista no regulamento, rol do INAS, Rol da ANS e protocolo clínico.
               </p>
               <div style={{ width: "100%", height: alturaGrafico }}>
                 <ResponsiveContainer>
@@ -526,7 +529,7 @@ export default function Quesitos({ tema, cores }) {
             <div className="card animated-card" style={cardStyle}>
               <h3>Natureza do Atendimento</h3>
               <p className="grafico-legenda" style={{ color: cores.texto }}>
-                Quesito i): quanto do que chega é urgência, emergência ou eletiva.
+                Quanto do que chega é urgência, emergência ou eletiva.
               </p>
               <div style={{ width: "100%", height: alturaGrafico }}>
                 <ResponsiveContainer>
@@ -570,7 +573,7 @@ export default function Quesitos({ tema, cores }) {
             <div className="card animated-card" style={cardStyle}>
               <h3>Situação de Carência</h3>
               <p className="grafico-legenda" style={{ color: cores.texto }}>
-                Quesito c): quantos beneficiários já haviam cumprido a carência quando o pedido foi analisado.
+                Quantos beneficiários já haviam cumprido a carência quando o pedido foi analisado.
               </p>
               <div style={{ width: "100%", height: alturaGrafico }}>
                 <ResponsiveContainer>
@@ -589,7 +592,7 @@ export default function Quesitos({ tema, cores }) {
             <div className="card animated-card" style={cardStyle}>
               <h3>Viabilidade Administrativa</h3>
               <p className="grafico-legenda" style={{ color: cores.texto }}>
-                Quesito l): desfecho administrativo do pedido — autorizado, não autorizado ou parcialmente autorizado.
+                Desfecho administrativo do pedido — autorizado, não autorizado ou parcialmente autorizado.
               </p>
               <div style={{ width: "100%", height: alturaGrafico }}>
                 <ResponsiveContainer>
@@ -621,7 +624,7 @@ export default function Quesitos({ tema, cores }) {
         <>
           <SecaoTitulo
             titulo="Coparticipação"
-            descricao="Os percentuais do quesito n) que mais aparecem nas respostas. Troque a métrica para ordenar por quantidade ou por valor envolvido."
+            descricao="Os percentuais de coparticipação que mais aparecem nas respostas. Troque a métrica para ordenar por quantidade ou por valor envolvido."
             cor="#fff"
           />
           <div className="filtro" style={{ marginTop: 16 }}>
@@ -754,9 +757,9 @@ export default function Quesitos({ tema, cores }) {
                 <th style={{ color: cores.texto }}>Data do Documento</th>
                 <th style={{ color: cores.texto }}>Processado em</th>
                 <th style={{ color: cores.texto }}>Carência</th>
-                <th style={{ color: cores.texto }}>d) Carência</th>
-                <th style={{ color: cores.texto }}>e) Rol INAS</th>
-                <th style={{ color: cores.texto }}>f) Rol ANS</th>
+                <th style={{ color: cores.texto }}>Enquadra na Carência</th>
+                <th style={{ color: cores.texto }}>Rol INAS</th>
+                <th style={{ color: cores.texto }}>Rol ANS</th>
                 <th style={{ color: cores.texto }}>Natureza</th>
                 <th style={{ color: cores.texto }}>Viabilidade</th>
                 <th style={{ color: cores.texto }}>Itens</th>
