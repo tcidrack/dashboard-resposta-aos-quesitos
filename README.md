@@ -68,9 +68,19 @@ VITE_SUPABASE_ANON_KEY=...
 
 ## Deploy (Vercel)
 
-Mesmo caminho do `pareceres-dashboard`: preset **Vite** (build `npm run build`, saída `dist/`),
-ligado à branch `main`. As duas variáveis precisam existir no painel da Vercel
-(*Settings → Environment Variables*) nos escopos Production, Preview e Development.
+Repositório: <https://github.com/tcidrack/dashboard-resposta-aos-quesitos>
+
+Mesmo caminho do `pareceres-dashboard`: importar o repositório com preset **Vite**
+(build `npm run build`, saída `dist/`), ligado à branch `main` — todo push na `main` dispara
+build e publica sozinho. Não há `vercel.json`; os padrões do preset bastam.
+
+As duas variáveis precisam existir no painel da Vercel (*Settings → Environment Variables*),
+nos três escopos — Production, Preview e Development:
+
+| Variável | Valor |
+|---|---|
+| `VITE_SUPABASE_URL` | URL do projeto Supabase (o mesmo do Robô Parecer) |
+| `VITE_SUPABASE_ANON_KEY` | chave **anon** — nunca a `service_role` |
 
 Atenção: o Vite injeta as `VITE_*` em tempo de **build**, não de runtime. Se faltarem, o site
 sobe e renderiza, mas nunca carrega dado nenhum — `src/lib/supabase.js` só registra um
