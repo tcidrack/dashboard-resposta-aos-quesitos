@@ -146,7 +146,7 @@ export default function Quesitos({ tema, cores }) {
   const fetchRespostas = useCallback(async (signal) => {
     let q = supabase
       .from(FONTE)
-      .select("id, created_at, guias, data_documento, status, carencia_pendente, " +
+      .select("id, created_at, guias, numero_processo, data_documento, status, carencia_pendente, " +
               "carencia_lab, carencia_demais, carencia_parto, carencia_urgencia, " +
               "carencia_consultas, carencia_exames, resposta_d, resposta_e, " +
               "resposta_f, resposta_g, i_resposta, j_opcao, k_opcao, l_texto, " +
@@ -224,8 +224,15 @@ export default function Quesitos({ tema, cores }) {
 
   let filtrados = dados;
   if (busca.trim()) {
+    // Casa nº de processo OU nº de guia. O processo tem pontos e traços, então
+    // a comparação é sobre os dígitos dos dois lados — digitar com ou sem
+    // pontuação encontra do mesmo jeito.
     const termo = busca.trim().replace(/\D/g, "");
-    if (termo) filtrados = filtrados.filter((r) => (r.guias || "").includes(termo));
+    if (termo) {
+      filtrados = filtrados.filter((r) =>
+        (r.guias || "").includes(termo) ||
+        (r.numero_processo || "").replace(/\D/g, "").includes(termo));
+    }
   }
 
   // Volume e valor por mês do documento
@@ -362,9 +369,11 @@ export default function Quesitos({ tema, cores }) {
       ["", "", "", "% no Rol da ANS", kpis.pctAns != null ? Number(kpis.pctAns.toFixed(2)) : "—"],
       ["", "", "", "% autorizado", kpis.pctAutorizado != null ? Number(kpis.pctAutorizado.toFixed(2)) : "—"],
       [],
-      ["Guias", "Data do Documento", "Processado em", "Carência", "Enquadra na Carência",
-       "Rol INAS", "Rol ANS", "Natureza", "Viabilidade", "Itens", "Valor Total", "Situação"],
+      ["Nº do Processo", "Guias", "Data do Documento", "Processado em", "Carência",
+       "Enquadra na Carência", "Rol INAS", "Rol ANS", "Natureza", "Viabilidade",
+       "Itens", "Valor Total", "Situação"],
       ...filtrados.map((r) => [
+        r.numero_processo || "—",
         r.guias || "—",
         formatarDataBR(r.data_documento),
         formatarDataHora(r.created_at),
@@ -675,7 +684,7 @@ export default function Quesitos({ tema, cores }) {
             <input
               className="filtro-processo"
               type="text"
-              placeholder="Número da guia"
+              placeholder="Nº do processo ou da guia"
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
             />
@@ -753,6 +762,7 @@ export default function Quesitos({ tema, cores }) {
           <table className="tabela-detalhe">
             <thead>
               <tr>
+                <th style={{ color: cores.texto }}>Nº do Processo</th>
                 <th style={{ color: cores.texto }}>Guias</th>
                 <th style={{ color: cores.texto }}>Data do Documento</th>
                 <th style={{ color: cores.texto }}>Processado em</th>
@@ -769,11 +779,12 @@ export default function Quesitos({ tema, cores }) {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={12} style={{ color: cores.texto, padding: 32 }}>Carregando...</td></tr>
+                <tr><td colSpan={13} style={{ color: cores.texto, padding: 32 }}>Carregando...</td></tr>
               ) : filtrados.length === 0 ? (
-                <tr><td colSpan={12} style={{ color: cores.texto, padding: 32 }}>Nenhum registro encontrado.</td></tr>
+                <tr><td colSpan={13} style={{ color: cores.texto, padding: 32 }}>Nenhum registro encontrado.</td></tr>
               ) : paginaDados.map((r) => (
                 <tr key={r.id}>
+                  <td style={{ color: cores.texto }}>{r.numero_processo || "—"}</td>
                   <td style={{ color: cores.texto }}>{r.guias || "—"}</td>
                   <td style={{ color: cores.texto }}>{formatarDataBR(r.data_documento)}</td>
                   <td style={{ color: cores.texto }}>{formatarDataHora(r.created_at)}</td>
