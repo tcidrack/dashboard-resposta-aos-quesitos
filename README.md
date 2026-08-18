@@ -19,26 +19,27 @@ Dados ao vivo do Supabase, atualizados automaticamente a cada 2 minutos.
 
 ## Origem dos dados e privacidade
 
-O painel lê a **view `vw_respostas_quesitos`**, não a tabela `respostas_quesitos`.
+O painel lê a tabela `respostas_quesitos` com a chave pública (`anon`), **sempre
+com lista explícita de colunas**.
 
-Isso é uma trava, não um detalhe: a chave `anon` fica visível no bundle do navegador. A view
-expõe todas as colunas **exceto `idade_beneficiario` e `data_adesao`**, que são os únicos campos
-do beneficiário gravados — nome e carteirinha nunca chegam ao banco. E, na tabela, a `anon` tem
-**privilégio de SELECT apenas nas colunas públicas**: pedir `idade_beneficiario` direto na
-tabela volta *permission denied*, e até um `select=*` é negado.
+Isso é uma trava, não um detalhe de estilo: a `anon` fica visível no bundle do
+navegador e tem privilégio de `SELECT` **apenas nas colunas públicas**. Pedir
+`idade_beneficiario` ou `data_adesao` volta *permission denied*, e até um
+`select=*` é negado — esses dois são os únicos campos do beneficiário gravados,
+já que nome e carteirinha nunca chegam ao banco.
 
-O SQL que cria tabela, policies e view é o `respostas_quesitos.sql`, na pasta do robô
-(`Robô Resposta aos Quesitos - INAS`). Rode-o no SQL Editor do Supabase antes de subir o
-painel — ele é idempotente e pode ser reaplicado.
+O modo de falha é favorável: quem escrever `select=*` recebe um **401 visível**,
+não um vazamento silencioso.
 
-A view roda como **`security_invoker`**: respeita o RLS e os privilégios de quem chama, em vez
-de rodar com o privilégio do dono. Ela só devolve linhas porque a tabela tem policy de `SELECT`
-para a `anon` — policy que existe porque o **upsert do robô** precisa dela (o `UPDATE ... WHERE
-guias` tem de enxergar a linha). Remover essa policy quebra as duas coisas de uma vez: o painel
-fica vazio e o registro do robô volta a falhar em silêncio.
+Existiu uma view `vw_respostas_quesitos` cumprindo esse papel, de quando a
+tabela não tinha policy de `SELECT`. A policy passou a ser obrigatória (o upsert
+do robô precisa dela para o `UPDATE ... WHERE` enxergar a linha), a proteção
+migrou para o privilégio de coluna — que vale igual na tabela — e a view virou
+só mais um lugar para manter em dia. Foi removida.
 
-No Table Editor a view aparece marcada como *"Unrestricted"*. É assim para qualquer view — elas
-não têm RLS próprio — e não indica falta de proteção.
+O SQL que cria tabela, policies e privilégios é o `respostas_quesitos.sql`, na
+pasta do robô (`Robô Resposta aos Quesitos - INAS`). Rode-o no SQL Editor do
+Supabase antes de subir o painel — ele é idempotente e pode ser reaplicado.
 
 ## Como rodar
 

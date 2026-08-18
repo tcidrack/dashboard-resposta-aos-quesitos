@@ -12,9 +12,11 @@ import {
 import { usePollingFetch } from "../hooks/usePollingFetch";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 
-// A VIEW, nunca a tabela: ela existe justamente para não trafegar idade nem
-// data de adesão do beneficiário para o navegador (ver respostas_quesitos.sql).
-const FONTE = "vw_respostas_quesitos";
+// As consultas listam as colunas SEMPRE, nunca "*": a chave anon deste bundle
+// só tem privilégio de SELECT nas colunas públicas, então um "*" na tabela
+// volta 401. É de propósito — idade e data de adesão do beneficiário não
+// trafegam para o navegador (ver respostas_quesitos.sql, seção 4).
+const FONTE = "respostas_quesitos";
 
 // Teto de linhas por consulta. Indicadores, gráficos e tabela saem todos desse
 // mesmo conjunto, então é ele que define o alcance do painel.
