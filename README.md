@@ -21,18 +21,24 @@ Dados ao vivo do Supabase, atualizados automaticamente a cada 2 minutos.
 
 O painel lê a **view `vw_respostas_quesitos`**, não a tabela `respostas_quesitos`.
 
-Isso é uma trava, não um detalhe: a chave `anon` fica visível no bundle do navegador, então a
-tabela **não tem policy de SELECT** — a `anon` só pode INSERT/UPDATE (é o que o robô usa). A
-view expõe todas as colunas **exceto `idade_beneficiario` e `data_adesao`**, que são os únicos
-campos do beneficiário gravados. Nome e carteirinha nunca chegam ao banco.
+Isso é uma trava, não um detalhe: a chave `anon` fica visível no bundle do navegador. A view
+expõe todas as colunas **exceto `idade_beneficiario` e `data_adesao`**, que são os únicos campos
+do beneficiário gravados — nome e carteirinha nunca chegam ao banco. E, na tabela, a `anon` tem
+**privilégio de SELECT apenas nas colunas públicas**: pedir `idade_beneficiario` direto na
+tabela volta *permission denied*, e até um `select=*` é negado.
 
 O SQL que cria tabela, policies e view é o `respostas_quesitos.sql`, na pasta do robô
 (`Robô Resposta aos Quesitos - INAS`). Rode-o no SQL Editor do Supabase antes de subir o
 painel — ele é idempotente e pode ser reaplicado.
 
-⚠️ A view é *security definer* por padrão, e é por isso que ela enxerga as linhas apesar do RLS.
-O linter do Supabase avisa sobre isso; aqui é intencional. Trocar para `security_invoker=true`
-deixaria o painel vazio.
+A view roda como **`security_invoker`**: respeita o RLS e os privilégios de quem chama, em vez
+de rodar com o privilégio do dono. Ela só devolve linhas porque a tabela tem policy de `SELECT`
+para a `anon` — policy que existe porque o **upsert do robô** precisa dela (o `UPDATE ... WHERE
+guias` tem de enxergar a linha). Remover essa policy quebra as duas coisas de uma vez: o painel
+fica vazio e o registro do robô volta a falhar em silêncio.
+
+No Table Editor a view aparece marcada como *"Unrestricted"*. É assim para qualquer view — elas
+não têm RLS próprio — e não indica falta de proteção.
 
 ## Como rodar
 
