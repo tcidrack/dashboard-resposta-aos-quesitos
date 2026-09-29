@@ -58,9 +58,11 @@ function formatarDataHora(iso) {
   );
 }
 
-// Dashboard de apresentação: abre no mês corrente (não só "hoje") para já mostrar dados.
-function primeiroDiaDoMesBR() {
-  return dataHojeBR().slice(0, 8) + "01";
+// Sem período escolhido, o painel mostra a produção do dia.
+function inicioDoDiaISO() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString();
 }
 
 // Texto livre do combobox de viabilidade: compara sem acento/caixa, e por
@@ -122,7 +124,7 @@ function truncar(s, max) {
 
 export default function Quesitos({ tema, cores }) {
   const [busca, setBusca] = useState("");
-  const [dataInicio, setDataInicio] = useState(primeiroDiaDoMesBR);
+  const [dataInicio, setDataInicio] = useState(dataHojeBR);
   const [dataFim, setDataFim] = useState("");
   const [filtroNatureza, setFiltroNatureza] = useState("");
   const [filtroViabilidade, setFiltroViabilidade] = useState("");
@@ -154,8 +156,13 @@ export default function Quesitos({ tema, cores }) {
               "resposta_f, resposta_g, i_resposta, j_opcao, k_opcao, l_texto, " +
               "m_resposta, n_percentuais, qtd_itens, valor_total")
       .order("created_at", { ascending: false });
-    if (dataInicio) q = q.gte("data_documento", dataInicio);
-    if (dataFim) q = q.lte("data_documento", dataFim);
+    // Período pela data de processamento (created_at), não pela do documento
+    if (dataInicio) {
+      q = q.gte("created_at", dataInicio);
+    } else if (!dataFim) {
+      q = q.gte("created_at", inicioDoDiaISO());
+    }
+    if (dataFim) q = q.lte("created_at", dataFim + "T23:59:59");
     if (filtroNatureza) q = q.eq("i_resposta", filtroNatureza);
     if (filtroViabilidade) q = q.eq("l_texto", filtroViabilidade);
     if (filtroCarencia) q = q.eq("carencia_pendente", filtroCarencia === "pendente");
@@ -241,7 +248,7 @@ export default function Quesitos({ tema, cores }) {
   const chartMensal = useMemo(() => {
     const meses = new Map();
     for (const r of dados) {
-      const mes = (r.data_documento || r.created_at || "").slice(0, 7);
+      const mes = (r.created_at || "").slice(0, 7);
       if (!mes) continue;
       let m = meses.get(mes);
       if (!m) { m = { respostas: 0, valor: 0 }; meses.set(mes, m); }
@@ -415,7 +422,7 @@ export default function Quesitos({ tema, cores }) {
       {/* INDICADORES */}
       <SecaoTitulo
         titulo="Indicadores do período"
-        descricao="Resumo das respostas emitidas. Ao limpar os filtros, os cards mostram o total geral (toda a base); com filtros aplicados, refletem o recorte selecionado."
+        descricao="Resumo das respostas emitidas. Por padrão, os cards mostram a produção de hoje; escolha um período nos filtros para ver outros dias."
         cor="#fff"
       />
 
